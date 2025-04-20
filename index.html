@@ -182,7 +182,7 @@
       fetch("https://script.google.com/macros/s/AKfycbxSBGymwfn9tI5IQIIhvbf8q6rgbBpZQNBwpx1WpyFWf1v7C8nb_pWCBAcHqLb7ImGX/exec")
         .then(response => response.text())
         .then(count => {
-          document.getElementById("viewCount").textContent = count;
+          document.getElementById("viewCount").textContent = data.count;
         })
         .catch(error => {
           console.error("Errore nel contatore:", error);
