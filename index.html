@@ -46,15 +46,11 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
-      margin-top: 20px;
+      display: none;
     }
 
     button:hover {
       background-color: #e6e6e6;
-    }
-
-    #openGateBtn {
-      display: none;
     }
 
     #status, #closed, #geoError {
@@ -78,12 +74,11 @@
   <h2>Allevamento di Morro D Oro</h2>
   <div class="section-title">Ingresso Camion</div>
 
-  <button id="enableGeoBtn">Attiva localizzazione</button>
   <button id="openGateBtn" onclick="apriCancello()">Apri Cancello</button>
 
   <div id="status">Il cancello si sta aprendo...</div>
-  <div id="closed">Accesso non disponibile, torna più tardi.</div>
-  <div id="geoError">Uhm, non sei davanti al cancello…</div>
+  <div id="closed">Accesso non disponibile, torna piÃ¹ tardi.</div>
+  <div id="geoError">Uhm, non sei davanti al cancelloâ¦</div>
 
   <div class="note">
     Ricorda di accettare/consentire la posizione attuale del tuo dispositivo per il corretto funzionamento.<br>
@@ -97,7 +92,6 @@
     const statusMsg = document.getElementById("status");
     const closedMsg = document.getElementById("closed");
     const geoErrorMsg = document.getElementById("geoError");
-    const enableGeoBtn = document.getElementById("enableGeoBtn");
 
     const latConsentita = 42.67624;
     const lonConsentita = 13.92359;
@@ -108,14 +102,14 @@
     function distanza(lat1, lon1, lat2, lon2) {
       const R = 6371e3;
       const rad = Math.PI / 180;
-      const φ1 = lat1 * rad;
-      const φ2 = lat2 * rad;
-      const Δφ = (lat2 - lat1) * rad;
-      const Δλ = (lon2 - lon1) * rad;
+      const Ï1 = lat1 * rad;
+      const Ï2 = lat2 * rad;
+      const ÎÏ = (lat2 - lat1) * rad;
+      const ÎÎ» = (lon2 - lon1) * rad;
 
-      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      const a = Math.sin(ÎÏ / 2) * Math.sin(ÎÏ / 2) +
+                Math.cos(Ï1) * Math.cos(Ï2) *
+                Math.sin(ÎÎ» / 2) * Math.sin(ÎÎ» / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
       return R * c;
@@ -160,7 +154,7 @@
         }
       } else {
         geoErrorMsg.style.display = "block";
-        geoErrorMsg.textContent = "Uhm, non sei davanti al cancello…";
+        geoErrorMsg.textContent = "Uhm, non sei davanti al cancelloâ¦";
       }
     }
 
@@ -174,19 +168,7 @@
           },
           (error) => {
             resetMessaggi();
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                geoErrorMsg.textContent = "Permesso posizione negato. Abilita la geolocalizzazione.";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                geoErrorMsg.textContent = "Posizione non disponibile.";
-                break;
-              case error.TIMEOUT:
-                geoErrorMsg.textContent = "Timeout richiesta posizione.";
-                break;
-              default:
-                geoErrorMsg.textContent = "Errore nella geolocalizzazione.";
-            }
+            geoErrorMsg.textContent = "Errore nella geolocalizzazione.";
             geoErrorMsg.style.display = "block";
           },
           { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
@@ -204,15 +186,11 @@
       }
     }
 
-    // iOS richiede interazione utente → sblocco col pulsante
-    enableGeoBtn.addEventListener("click", () => {
-      enableGeoBtn.style.display = "none";
-      startWatchingPosition();
-    });
+    window.addEventListener("load", startWatchingPosition);
 
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
-        if (geoWatcherId === null) startWatchingPosition();
+        startWatchingPosition();
       } else {
         stopWatchingPosition();
       }
