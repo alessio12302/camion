@@ -87,7 +87,6 @@
     Se non funziona, contattare il custode.
   </div>
 
-
   <script>
     const button = document.getElementById("openGateBtn");
     const statusMsg = document.getElementById("status");
@@ -139,7 +138,6 @@
 
     function checkAccess(lat, lon) {
       resetMessaggi();
-
       const distanzaUtente = distanza(lat, lon, latConsentita, lonConsentita);
       const lastClick = parseInt(localStorage.getItem("gateClickTime") || "0");
       const now = Date.now();
@@ -159,20 +157,40 @@
       }
     }
 
+    function handleGeoError(error) {
+      resetMessaggi();
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          geoErrorMsg.textContent = "Permesso localizzazione negato. Controlla le impostazioni di Safari.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          geoErrorMsg.textContent = "Posizione non disponibile.";
+          break;
+        case error.TIMEOUT:
+          geoErrorMsg.textContent = "Timeout nella richiesta di posizione.";
+          break;
+        default:
+          geoErrorMsg.textContent = "Errore sconosciuto nella geolocalizzazione.";
+      }
+      geoErrorMsg.style.display = "block";
+    }
+
     function startWatchingPosition() {
       if (navigator.geolocation) {
-        geoWatcherId = navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
           (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            checkAccess(lat, lon);
+            checkAccess(position.coords.latitude, position.coords.longitude);
+
+            geoWatcherId = navigator.geolocation.watchPosition(
+              (pos) => {
+                checkAccess(pos.coords.latitude, pos.coords.longitude);
+              },
+              handleGeoError,
+              { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+            );
           },
-          (error) => {
-            resetMessaggi();
-            geoErrorMsg.textContent = "Errore nella geolocalizzazione.";
-            geoErrorMsg.style.display = "block";
-          },
-          { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+          handleGeoError,
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
         );
       } else {
         geoErrorMsg.textContent = "Il tuo browser non supporta la geolocalizzazione.";
